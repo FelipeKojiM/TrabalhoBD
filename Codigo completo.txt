@@ -1,0 +1,176 @@
+create table pessoa(
+	id_pessoa serial primary key not null,
+	nome varchar(20) not null,
+	cpf varchar(20) not null
+
+);
+create table aluno(
+	id_aluno serial primary key not null, 
+	id_pessoa int not null,
+	id_nota int NOT NULL,
+	media_anual int NOT NULL,
+	id_periodo int not null,
+	id_disciplina int not null,
+	constraint FK_PESSOA foreign key (id_pessoa) references pessoa(id_pessoa),
+	constraint FK_NOTA foreign key (id_nota) references notas(id_notas),
+	constraint FK_PERIODO foreign key (id_periodo) references periodo(id_periodo),
+	constraint FK_DISCIPLINA foreign key (id_disciplina) references disciplina(id_disciplina)
+	
+);
+
+create table disciplina(
+	id_disciplina serial primary key not null,
+	noma_disciplina varchar(20) not null,
+	periodo_noma_disciplina int not null,
+	constraint FK_PERIODO foreign key periodo_noma_disciplina references periodo(id_periodo)
+	
+);
+create table notas(
+	id_notas serial primary key not null,
+	primeiro_bimestre int not null,
+	segundo_bimestre int not null, 
+	terceiro_bimestre int not null,
+	quarto_bimestre int not null
+);
+
+create table periodo(
+	id_periodo serial primary key not null,
+	nome varchar(20) not null
+);
+
+create table recuperacao(
+	id_recuperacao serial primary key not null,
+	id_aluno int not null,
+	id_disciplina int not null
+);
+
+create or replace function
+insert_media_anual()
+returns trigger
+language PLPGSQL
+as
+$$
+begin
+	update aluno SET al.media_anual = ((nt.primeiro_bimestre + nt.segundo_bimestre + nt.terceiro_bimestre + nt.quarto_bimestre) / 4) 
+	from aluno AS al INNER JOIN notas AS nt ON al.id_nota = nt.id_nota WHERE al.id_notas = nt.id_notas;
+
+	return new;
+end;
+$$	
+
+create or replace TRIGGER calcula_media
+	AFTER INSERT ON notas
+	FOR EACH ROW
+	EXECUTE FUNCTION insert_media_anual();
+	
+
+create or replace function
+insert_recuperacao()
+returns trigger
+LANGUAGE PLPGSQL
+as
+$$
+begin
+	IF NEW.media_anual < 60 THEN
+		insert into recuperacao(id_aluno, id_disciplina) values(new.id_aluno, new.id_disciplina);
+	END IF;
+	return new;
+end;
+$$
+
+create or replace TRIGGER prova_recuperacao
+	AFTER UPDATE ON aluno
+	FOR EACH ROW
+	EXECUTE FUNCTION insert_recuperacao();
+
+insert into pessoa (nome, cpf)
+values ('Klay','00011122233')
+
+insert into pessoa (nome, cpf)
+values ('Crhis','00022233344')
+
+insert into pessoa (nome, cpf)
+values ('Mirta','00033344455')
+
+insert into pessoa (nome, cpf)
+values ('Ariela','00044455566')
+
+insert into pessoa (nome, cpf)
+values ('Ivana','00055566677')
+
+insert into pessoa (nome, cpf)
+values ('Jade','00066677788')
+
+insert into pessoa (nome, cpf)
+values ('Anastácia','00077788899')
+
+insert into pessoa (nome, cpf)
+values ('Calihan','00088899910')
+
+insert into pessoa (nome, cpf)
+values ('Hector','00099910101')
+
+insert into pessoa (nome, cpf)
+values ('Zen','00010101111')
+
+insert into disciplina (noma_disciplina)
+values ('Arte')
+
+insert into disciplina (noma_disciplina)
+values ('Música')
+
+insert into disciplina (noma_disciplina)
+values ('Literatura')
+
+insert into disciplina (noma_disciplina)
+values ('Produção Textual')
+
+insert into disciplina (noma_disciplina)
+values ('Canto')
+
+insert into disciplina (noma_disciplina)
+values ('Piano')
+
+insert into disciplina (noma_disciplina)
+values ('Teatro')
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (10, 9, 8, 9)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (5, 6, 3, 7)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (7, 6, 6, 8)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (9, 9, 10, 8)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (3, 5, 5, 6)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (10, 10, 8, 9)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (7, 8, 8, 8)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (6, 9, 10, 9)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (4, 5, 7, 7)
+
+insert into notas (primeiro_bimestre, segundo_bimestre, terceiro_bimestre, quarto_bimestre)
+values (10, 9, 7, 10)
+
+insert into periodo (nome)
+values ('Manha')
+
+insert into periodo (nome)
+values ('Tarde')
+
+insert into periodo (nome)
+values ('Noite')
+
+
